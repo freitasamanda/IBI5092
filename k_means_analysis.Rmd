@@ -1,0 +1,18 @@
+---
+title: "k_means_analysis"
+author: "Amanda Freitas"
+date: "2023-05-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+install.packages("statGraph")
+install.packages("igraph")
+```
+
+```{r}
+# lendo todos os grafos
+
+graphs <- read.txt
+```
+
