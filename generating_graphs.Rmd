@@ -86,11 +86,7 @@ cem <- graph.cem(graphs,
           k = 3,
           max_iter = 3)
 ```
+
 # Clustering Evaluation
 
-
-```{r}
-silhouette_score_kmeans <- silhouette(k_means, graphs)
-```
-
-
+To calculate the silhouette statistic we need to convert to distance matrix
