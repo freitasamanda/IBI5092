@@ -6,528 +6,95 @@ output: html_document
 ---
 
 ```{r}
+install.packages("igraph")
+install.packages("statGraph")
+install.packages("purrr")
+install.packages("stats")
+install.packages("factoextra")
+install.packages("cluster")
+```
+
+```{r}
 library(igraph)
+library(statGraph)
+library(purrr)
+library(stats)
+library(factoextra)
+library(cluster)
 ```
 
-# BABARASI-ALBERT GRAPHS
+# GENERATING GRAPHS
 
-## GENERATING GRAPHS  
-  
-- Mesmo modelo e mesmos parâmetros
+We generated 6 Erdös-Rényi graphs, with n between 50 and 70 and p between 0.15 and 0.4.
 
+We generated 6 Watts-Strogatz graphas, with dim = 1, size between 50 and 100, nei between 3 nd 6, and p between 0.04 and 0.07.
+
+We generated 6 Barabasi-Albert graphs, with nodes between 100 and 200, power betweet 0.3 and 0.6, and m=2.
 
 ```{r}
-set.seed(1998)
-barabasi_graph01 <- barabasi.game(
-  n = 100,
-  power = 0.4,
-  m = 2,
-  directed = F
-)
+set.seed(19)
+k <- 6
 
-barabasi_graph02 <- barabasi.game(
-  n = 100,
-  power = 0.4,
-  m = 2,
-  directed = F
-)
-
-barabasi_graph03 <- barabasi.game(
-  n = 100,
-  power = 0.4,
-  m = 2,
-  directed = F
-)
-```
+# erdos-renyi graphs
+n_erdos <- sample(50:70, 6, replace = F)
+p_erdos <- runif(6, 0.01, 0.4)
 
 
-- Mesmo modelo e parâmetros distintos
-```{r}
-set.seed(1999)
+erdos_graphs <- map(1:k, ~erdos.renyi.game(n = n_erdos,
+                                           p = p_erdos))
 
-barabasi_graph04 <- barabasi.game(
-  n = 200,
-  power = 0.6,
-  m = 2,
-  directed = F
-)
+#watts-strogatz graphs
+dim_watts <- 1
+size_watts <- sample(50:100, 6, replace = F)
+nei_watts <- runif(6, 3, 6)
+p_watts <- runif(6, 0.04, 0.07)
 
-barabasi_graph05 <- barabasi.game(
-  n = 200,
-  power = 0.6,
-  m = 2,
-  directed = F
-)
+watts_graphs <- map(1:k, ~sample_smallworld(dim = dim_watts,
+                                            size = size_watts,
+                                            nei = nei_watts,
+                                            p = p_watts,
+                                            loops = F))
+#barabasi albert graphs
+n_barabasi <- sample(100:200, replace = F)
+p_barabasi <- sample(0.3:0.6, replace = F)
+m_barabasi <- 2
 
-barabasi_graph06 <- barabasi.game(
-  n = 220,
-  power = 0.3,
-  m = 2,
-  directed = F
-)
+barabasi_graphs <- map(1:k, 
+                       ~barabasi.game(n = n_barabasi,
+                                      power = p_barabasi,
+                                      m = m_barabasi,
+                                      directed = F))
+
+#joining graphs in a single list
+graphs <- c(erdos_graphs, watts_graphs, barabasi_graphs)
 ```
 
 
-## SAVING IGRAPH_OBJECTS
+# graph_k_means
 
 ```{r}
-write_graph(barabasi_graph01,
-            file = "barabasi_graphs/objects/barabasi_graph01.txt",
-            format = "edgelist")
-```
-
-
-```{r}
-write_graph(barabasi_graph02,
-            file = "barabasi_graphs/objects/barabasi_graph02.txt",
-            format = "edgelist")
+?graph.kmeans
 ```
 
 ```{r}
-write_graph(barabasi_graph03,
-            file = "barabasi_graphs/objects/barabasi_graph03.txt",
-            format = "edgelist")
+k_means <- graph.kmeans(graphs, k = 3, nstart = 5)
 ```
+
+# graph.cem
 
 
 ```{r}
-write_graph(barabasi_graph04,
-            file = "barabasi_graphs/objects/barabasi_graph04.txt",
-            format = "edgelist")
+graph.cem(graphs,
+          model = "ER",
+          k = 3)
 ```
+
+
+# Clustering Evaluation
 
 
 ```{r}
-write_graph(barabasi_graph05,
-            file = "barabasi_graphs/objects/barabasi_graph05.txt",
-            format = "edgelist")
+silhouette_score_kmeans <- silhouette(k_means, graphs)
 ```
 
 
-```{r}
-write_graph(barabasi_graph06,
-            file = "barabasi_graphs/objects/barabasi_graph06.txt",
-            format = "edgelist")
-```
-
-
-
-## PLOTTING AND SAVING PLOTS
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph01.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph01,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph02.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph02,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph03.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph03,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph04.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph04,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph05.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph05,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("barabasi_graphs/plots/barabasi_graph06.png", units="in", width=5, height=5, res=300)
-
-plot(barabasi_graph06,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-
-#ERDOS_RENYI GRAPHS
-
-## GENERATING GRAPHS
-- Mesmo modelo e mesmos parâmetros
-```{r}
-set.seed(1998)
-
-erdos_renyi_graph01 <- erdos.renyi.game(
-  n = 50,
-  p = 0.3,
-  directed = F,
-  loops = F
-)
-
-
-erdos_renyi_graph02 <- erdos.renyi.game(
-  n = 50,
-  p = 0.3,
-  directed = F,
-  loops = F
-)
-
-erdos_renyi_graph03 <- erdos.renyi.game(
-  n = 50,
-  p = 0.3,
-  directed = F,
-  loops = F
-)
-```
-
-- Mesmo modelo e parâmetros distintos
-```{r}
-set.seed(1999)
-erdos_renyi_graph04 <- erdos.renyi.game(
-  n = 50,
-  p = 0.15,
-  directed = F,
-  loops = F
-)
-
-erdos_renyi_graph05 <- erdos.renyi.game(
-  n = 50,
-  p = 0.15,
-  directed = F,
-  loops = F
-)
-
-erdos_renyi_graph06 <- erdos.renyi.game(
-  n = 55,
-  p = 0.2,
-  directed = F,
-  loops = F
-)
-
-```
-
-
-
-
-## SAVING IGRAPH_OBJECTS
-
-```{r}
-write_graph(erdos_renyi_graph01,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph01.txt",
-            format = "edgelist")
-
-write_graph(erdos_renyi_graph02,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph02.txt",
-            format = "edgelist")
-
-write_graph(erdos_renyi_graph03,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph03.txt",
-            format = "edgelist")
-
-write_graph(erdos_renyi_graph04,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph04.txt",
-            format = "edgelist")
-
-write_graph(erdos_renyi_graph05,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph05.txt",
-            format = "edgelist")
-
-
-write_graph(erdos_renyi_graph06,
-            file = "erdos_renyi_graphs/objects/erdos_renyi_graph06.txt",
-            format = "edgelist")
-
-
-```
-
-
-## PLOTTING AND SAVING PLOTS
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph01.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph01,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph02.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph02,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph03.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph03,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph04.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph04,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph05.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph05,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("erdos_renyi_graphs/plots/erdos_renyi_graph06.png", units="in", width=5, height=5, res=300)
-
-plot(erdos_renyi_graph06,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-
-# WATTS-STROGATZ GRAPHS
-
-## GENERATING GRAPHS  
-
-- Mesmo modelo e mesmos parâmetros
-```{r}
-set.seed(1998)
-
-watts_graph01 <- sample_smallworld(dim = 1,
-                  size = 100,
-                  nei = 5,
-                  p = 0.05,
-                  loops = F)
-
-watts_graph02 <- sample_smallworld(dim = 1,
-                  size = 100,
-                  nei = 5,
-                  p = 0.05,
-                  loops = F)
-
-watts_graph03 <- sample_smallworld(dim = 1,
-                  size = 100,
-                  nei = 5,
-                  p = 0.05,
-                  loops = F)
-```
-
-
-- Mesmo modelo e parâmetros distintos
-```{r}
-set.seed(1999)
-
-watts_graph04 <- sample_smallworld(dim = 1,
-                  size = 50,
-                  nei = 6,
-                  p = 0.07,
-                  loops = F)
-
-watts_graph05 <- sample_smallworld(dim = 1,
-                  size = 50,
-                  nei = 6,
-                  p = 0.07,
-                  loops = F)
-
-watts_graph06 <- sample_smallworld(dim = 1,
-                  size = 60,
-                  nei = 3,
-                  p = 0.04,
-                  loops = F)
-```
-
-
-```{r}
-summary(watts_graph01)
-```
-
-
-## SAVING IGRAPH_OBJECTS
-
-```{r}
-write_graph(watts_graph01,
-            file = "watts_strogatz_graphs/objects/watts_graph01.txt",
-            format = "edgelist")
-
-write_graph(watts_graph02,
-            file = "watts_strogatz_graphs/objects/watts_graph02.txt",
-            format = "edgelist")
-
-write_graph(watts_graph03,
-            file = "watts_strogatz_graphs/objects/watts_graph03.txt",
-            format = "edgelist")
-
-
-write_graph(watts_graph04,
-            file = "watts_strogatz_graphs/objects/watts_graph04.txt",
-            format = "edgelist")
-
-write_graph(watts_graph05,
-            file = "watts_strogatz_graphs/objects/watts_graph05.txt",
-            format = "edgelist")
-
-write_graph(watts_graph06,
-            file = "watts_strogatz_graphs/objects/watts_graph06.txt",
-            format = "edgelist")
-```
-
-## PLOTTING AND SAVING PLOTS
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph01.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph01,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph02.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph02,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph03.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph03,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph04.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph04,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph05.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph05,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
-
-```{r}
-tiff("watts_strogatz_graphs/plots/watts_graph06.png", units="in", width=5, height=5, res=300)
-
-plot(watts_graph06,
-     layout=layout_with_fr, 
-     vertex.size=4,
-     vertex.color="black", 
-     edge.arrow.size=0.4,
-     vertex.label = NA)
-
-dev.off()
-```
