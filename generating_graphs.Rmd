@@ -6,12 +6,12 @@ output: html_document
 ---
 
 ```{r}
-install.packages("igraph")
-install.packages("statGraph")
-install.packages("purrr")
-install.packages("stats")
-install.packages("factoextra")
-install.packages("cluster")
+#install.packages("igraph")
+#install.packages("statGraph")
+#install.packages("purrr")
+#install.packages("stats")
+#install.packages("factoextra")
+#install.packages("cluster")
 ```
 
 ```{r}
@@ -73,23 +73,19 @@ graphs <- c(erdos_graphs, watts_graphs, barabasi_graphs)
 # graph_k_means
 
 ```{r}
-?graph.kmeans
-```
-
-```{r}
-k_means <- graph.kmeans(graphs, k = 3, nstart = 5)
+#inputs - list of graphs, k number of clusters
+k_means <- graph.kmeans(graphs, k = 3)
 ```
 
 # graph.cem
 
-
 ```{r}
-graph.cem(graphs,
+#inputs - list of graphs, random graph models, k number of clusters, maximum number of expectation-maximization steps to execute
+cem <- graph.cem(graphs,
           model = "ER",
-          k = 3)
+          k = 3,
+          max_iter = 3)
 ```
-
-
 # Clustering Evaluation
 
 
