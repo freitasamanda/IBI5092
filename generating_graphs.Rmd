@@ -74,8 +74,13 @@ graphs <- c(erdos_graphs, watts_graphs, barabasi_graphs)
 
 ```{r}
 #inputs - list of graphs, k number of clusters
-k_means <- graph.kmeans(graphs, k = 3)
+k_means <- graph.kmeans(graphs, k = 2)
 ```
+
+```{r}
+k_means_02 <- graph.kmeans(graphs, k = 2)
+```
+
 
 # graph.cem
 
@@ -87,6 +92,10 @@ cem <- graph.cem(graphs,
           max_iter = 3)
 ```
 
-# Clustering Evaluation
+```{r}
+cem_03 <- graph.cem(graphs,
+          model = "ER",
+          k = 5,
+          max_iter = 3)
+```
 
-To calculate the silhouette statistic we need to convert to distance matrix
